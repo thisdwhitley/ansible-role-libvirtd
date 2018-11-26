@@ -1,0 +1,38 @@
+---
+- hosts: all
+
+  pre_tasks:
+    - name: Update apt cache
+      apt: update_cache=yes cache_valid_time=300
+      when: ansible_os_family == 'Debian'
+
+    - name: Ensure build dependencies are installed (RedHat)
+      package: name=which state=present
+      when: ansible_os_family == 'RedHat'
+
+    # - name: create test users
+    #   become: yes
+    #   user:
+    #     name: '{{ item }}'
+    #     state: present
+    #     home: '/home/{{ item }}'
+    #     createhome: yes
+    #   with_items:
+    #     - test_user1
+    #     - test_user2
+    #     - test_user3
+
+  roles:
+    - role: role_under_test
+      config_for_sat: yes
+      libvirt_storage:
+        replace_default: yes
+        pool_name: Images
+        pool_location: /depot/images/libvirt
+      libvirt_network:
+        remove_default: no
+        name: labtop
+        forward_mode: nat
+        bridge_name: virbr5
+        ip_address: 192.168.111.1
+        netmask: 255.255.255.0
