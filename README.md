@@ -56,7 +56,7 @@ Minimal playbook:
 ```yaml
 - hosts: servers
   roles:
-    - role: hexchat
+    - role: libvirtd
 ```
 
 Playbook with user-specific settings:
@@ -86,6 +86,9 @@ You can find more roles from thisdwhitley on
 
 Development & Testing
 ---------------------
+
+I'm not sure this makes sense to test this way because I'm essentially
+testing virtualization in containers?
 
 This project uses [Molecule](http://molecule.readthedocs.io/) to aid in the
 development and testing; the role is unit tested using
