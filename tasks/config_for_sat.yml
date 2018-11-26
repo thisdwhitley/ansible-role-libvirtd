@@ -1,0 +1,21 @@
+---
+# tasks specific to preparing libvirtd to work with Red Hat Satellite
+
+- name: config| update /etc/libvirt/libvirtd for Satellite
+  become: yes
+  blockinfile:
+    path: /etc/libvirt/libvirtd.conf
+    backup: yes
+    block: |
+      listen_tls = 0
+      listen_tcp = 1
+      tcp_port = "16509"
+      auth_tcp = "none"
+  notify: restart libvirtd
+
+- name: config| update /etc/sysconfig/libvirtd for Satellite
+  become: yes
+  lineinfile:
+    path: /etc/sysconfig/libvirtd
+    line: 'LIBVIRTD_ARGS="--listen"'
+  notify: restart libvirtd

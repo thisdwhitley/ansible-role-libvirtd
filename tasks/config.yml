@@ -1,0 +1,47 @@
+---
+# modify some configurations
+
+# - name: config| create the libvirt system group
+#   become: yes
+#   group:
+#     name: libvirt
+#     state: present
+
+# - name: config| add new_user to libvirt group
+#   become: yes
+#   user:
+#     name: "{{ new_user | default( ansible_user_id ) }}"
+#     groups: libvirt
+
+# - name: config| install virt module dependancies
+#   become: yes
+#   package:
+#     name: "{{ item }}"
+#     state: present
+#   with_items:
+#     - python2-libvirt
+#     - python2-lxml
+
+
+# - include_tasks: config_for_sat.yml
+#   when: config_for_sat
+
+- include_tasks: config_storage.yml
+  # when: libvirt_storage.pool_name is defined and
+  #       libvirt_storage.pool_name not in ({}, '', None, omit) and
+  #       libvirt_storage.pool_location is defined and
+  #       libvirt_storage.pool_location not in ({}, '', None, omit)
+
+# - include_tasks: config_network.yml
+#   when: libvirt_network.name is defined and
+#         libvirt_network.name not in ({}, '', None, omit) and
+#         libvirt_network.forward_mode is defined and
+#         libvirt_network.forward_mode not in ({}, '', None, omit) and
+#         libvirt_network.bridge_name is defined and
+#         libvirt_network.bridge_name not in ({}, '', None, omit) and
+#         libvirt_network.ip_address is defined and
+#         libvirt_network.ip_address not in ({}, '', None, omit) and
+#         libvirt_network.netmask is defined and
+#         libvirt_network.netmask not in ({}, '', None, omit)
+#   tags: config_network
+

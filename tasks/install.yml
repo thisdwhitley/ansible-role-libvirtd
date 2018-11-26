@@ -1,0 +1,13 @@
+---
+# install some packages and utilities
+
+- name: install| libvirtd tools and utilities
+  become: true
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - libvirt-client
+    - libguestfs-tools
+    - virt-manager
+    - virt-install
