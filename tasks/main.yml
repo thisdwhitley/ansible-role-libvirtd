@@ -22,7 +22,7 @@
       skip: true
   tags: always
 
-# - include_tasks: install.yml
+- include_tasks: install.yml
 #   when: ansible_distro == "fedora" 
 
 - include_tasks: config.yml
