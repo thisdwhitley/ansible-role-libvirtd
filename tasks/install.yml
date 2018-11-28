@@ -11,3 +11,4 @@
     - libguestfs-tools
     - virt-manager
     - virt-install
+    - python2-lxml
