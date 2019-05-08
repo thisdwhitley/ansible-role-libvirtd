@@ -13,18 +13,8 @@
 #     name: "{{ new_user | default( ansible_user_id ) }}"
 #     groups: libvirt
 
-# - name: config| install virt module dependancies
-#   become: yes
-#   package:
-#     name: "{{ item }}"
-#     state: present
-#   with_items:
-#     - python2-libvirt
-#     - python2-lxml
-
-
-# - include_tasks: config_for_sat.yml
-#   when: config_for_sat
+- include_tasks: config_for_sat.yml
+  when: config_for_sat
 
 - include_tasks: config_storage.yml
   when: libvirt_storage.pool_name is defined and

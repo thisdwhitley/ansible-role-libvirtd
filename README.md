@@ -1,55 +1,76 @@
-Ansible Role: libvirtd - WIP
-======================
+# Ansible Role: libvirtd
 
-***I am revisiting this and will be cleaning it up***
-
-This is a role to install the packages necessary to manage KVM virtual machines
-locally.  Additionally, based upon variables passed to the role, it can
+This is an Ansible role to install the packages necessary to manage KVM virtual
+machines locally.  Additionally, based upon variables passed to the role, it can
 configure the behavior of libvirtd.
 
 I'm not quite sure how this will work with Ubuntu...I still have to set up my
 testing environment.
 
-Requirements
-------------
+## Overview
 
-* ...
+At a very high level, this role will:
 
-Role Variables
---------------
+* install packages which are helpful for managing virtual machines on a local
+  system
+* [*optional*] if settings are provided, they will modify the default behavior
+  accordingly
 
-The variables you can pass into this role are really specific to configuration
-at this point.  The configuration of libvirt applies to the system as a whole
-and not per-user.  However, in order for a non-root user to run commands, they
-must be added to a `libvirt` system group.  The role blindly adds a user based
-on `new_user` variable or whoever calls the role.
+I am struggling to test this role, so currently the focus is on Fedora and
+additional testing will occur for other OSes as time allows (read into that what
+you will).
 
-* `config_for_sat:` **DEFAULT = no** libvirt can be configured as a provider for
-  a Red Hat Satellite but it requires some specific settings.  Setting `config
-  _for_sat` to `yes` will ensure those settings are made. ***NOTE:*** *this is really
-  probably more appropriate in a `satellite` role but I am still putting
-  everything together as of this writing...*
-* `libvirt_storage:` these settings allow the modification of storage pools:
-  * `replace_default:` if this is set to `yes` then `pool_location` must be 
+## Important Notes
+
+* the real driver for this role was the fact that the default location for
+  storing VMs was not ideal for me.  I prefer to put them where I have more
+  storage available so this role was born
+* the role allows you to specify a different location for the default pool, but
+  does not create the actual partition/space
+
+## Requirements
+
+Any package or additional repository requirements will be addressed in the role.
+
+## Role Variables
+
+All of these variables should be considered **optional** however, be aware that
+sanity checking is minimal (if at all).  The configuration of libvirt applies to
+the system as a whole and not per-user.
+
+* `config_for_sat` **DEFAULT = false** libvirt can be configured as a provider
+  for a Red Hat Satellite but it requires some specific settings.  Setting
+  `config_for_sat` to `yes` will ensure those settings are made. ***NOTE:***
+  *this is really probably more appropriate in a `satellite` role but I am still
+  putting everything together as of this writing...*
+* `libvirt_storage` these settings allow the modification of storage pools:
+  * `replace_default` if this is set to `true` then `pool_location` **must** be
     specified and it will replace the location of the `default` storage pool [as
     an aside, the default location of `/var/lib/libvirt/images` has the
     potential to fill a `/` partition if not partitioned appropriately]
-  * `pool_name:` this will be the name of the new storage pool if it is to
+  * `pool_name` this will be the name of the new storage pool if it is to
     reside alongside the `default` pool (this will be ignored if `replace_
-    default` is `yes`)
-  * `pool_location:` the directory where the storage pool specifies
-* `servers:` a **list** of servers to connect to by default (the network will be
-created based on `username`)
-* `channels:` this is currently not used, but is included as a way to document
-(remind yourself) which channels you should join
+    default` is `true`)
+  * `pool_location` the directory where the storage pool specifies
+* `libvirt_network` these settings allow the addition or modification of
+  a network
+  * `remove_default` if this is set to `true` then the default network will be
+    removed.  I cannot recall why you would want to do this
+  * `name` this will be the name of the new network
+  * `forward_mode` **DEFAULT = nat** if you prefer a mode other than `nat` you
+    can set it here
+  * `bridge_name` this will largely be dependent on your configuration
+  * `ip_address` this is the IP of the bridge for this network.  Used with the
+    `netmask` to identify the range of IPs that can communicate on this network
+  * `netmask` **DEFAULT = 255.255.255.0** if you prefer a different subnet mask
+    you can set it here
 
 **NOTE** *this role will not create the underlaying structure for a custom
 storage pool, but it will create a directory...meaning that if you intend to use
 a logical volume for this, you must create it, create a filesystem, and mount it
 to the new `libvirt_storage.pool_location` outside of this role*
 
-Example Playbooks
------------------
+## Example Playbook
 
 Minimal playbook:
 
@@ -64,13 +85,13 @@ Playbook with user-specific settings:
 - hosts: servers
   roles:
     - role: libvirtd
-      config_for_sat: yes
+      config_for_sat: false
       libvirt_storage:
-        replace_default: yes
+        replace_default: true
         pool_name: Images
         pool_location: /depot/images/libvirt
       libvirt_network:
-        remove_default: no
+        remove_default: false
         name: labtop
         forward_mode: nat
         bridge_name: virbr5
@@ -78,45 +99,43 @@ Playbook with user-specific settings:
         netmask: 255.255.255.0
 ```
 
-More Roles From thisdwhitley
-----------------------------
+## Inclusion
 
-You can find more roles from thisdwhitley on
-[GitHub](https://github.com/thisdwhitley/ansible-roles).
+I envision this role being included in a larger project through the use of a
+`requirements.yml` file.  So here is an example of what you would need in your
+file:
 
-Development & Testing
----------------------
-
-I'm not sure this makes sense to test this way because I'm essentially
-testing virtualization in containers?
-
-This project uses [Molecule](http://molecule.readthedocs.io/) to aid in the
-development and testing; the role is unit tested using
-[Testinfra](http://testinfra.readthedocs.io/) and
-[pytest](http://docs.pytest.org/).
-
-To develop or test you'll need to have installed the following:
-
-* Linux (e.g. [Ubuntu](http://www.ubuntu.com/))
-* [Docker](https://www.docker.com/)
-* [Python](https://www.python.org/) (including python-pip)
-* [Ansible](https://www.ansible.com/)
-* [Molecule](http://molecule.readthedocs.io/)
-
-To run the role (i.e. the `tests/test.yml` playbook), and test the results
-(`tests/test_role.py`), execute the following command from the project root
-(i.e. the directory with `molecule.yml` in it):
-
-```bash
-molecule test
+```yaml
+# get the libvirtd role from github
+- src: https://github.com/thisdwhitley/ansible-role-libvirtd.git
+  scm: git
+  name: libvirtd
 ```
 
-License
--------
+Have the above in a `requirements.yml` file for your project would then allow
+you to "install" it (prior to use in some sort of setup script?) with:
 
-MIT
+```bash
+ansible-galaxy install -p ./roles -r requirements.yml
+```
 
-Author Information
-------------------
+## Testing
 
-Daniel Whitley
+The purpose of this project does not lend itself to easy testing.  It is kind
+of crappy, sorry about that.
+
+## To-do
+
+* figure out a clean and easy way to test
+* test with different OSes
+* determine if user modification is necessary
+* shift to using [Cockpit](https://cockpit-project.org/guide/latest/feature-virtualmachines) instead of virt-manager
+
+## References
+
+* N/A
+
+## License
+
+All parts of this project are made available under the terms of the [MIT
+License](LICENSE).

@@ -11,7 +11,6 @@
     - libguestfs-tools
     - virt-manager
     - virt-install
-    - python2-lxml
 
 - name: install| install Python modules
   become: true

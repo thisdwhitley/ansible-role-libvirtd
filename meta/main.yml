@@ -1,0 +1,15 @@
+---
+dependencies: []
+
+galaxy_info:
+  author: thisdwhitley
+  description: install and configure libvirtd
+  license: license (MIT)
+  min_ansible_version: 2.4
+  platforms:
+    - name: Fedora
+      versions:
+        - 27
+        - 28
+        - 29
+    - galaxy_tags: libvirtd
