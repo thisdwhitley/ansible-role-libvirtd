@@ -16,7 +16,5 @@
 - name: install| install Python modules
   become: true
   pip:
-    name: "{{ item }}"
+    name: ['lxml']
     state: present
-  with_items:
-    - lxml
