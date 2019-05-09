@@ -14,7 +14,7 @@
         libvirt_network.ip_address is defined
 
 - name: config| include config_user tasks
-  include:tasks:
+  include_tasks:
     file: config_user.yml
   with_items: "{{ libvirt_users }}"
   loop_control:
