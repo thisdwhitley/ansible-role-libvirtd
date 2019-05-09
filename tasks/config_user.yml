@@ -8,7 +8,7 @@
     name: libvirt
     state: present
 
-- name: config_user| add {{ item }} to libvirt group
+- name: config_user| add {{ user }} to libvirt group
   become: true
   user:
     name: "{{ user }}"
