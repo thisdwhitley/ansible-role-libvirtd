@@ -38,6 +38,14 @@ All of these variables should be considered **optional** however, be aware that
 sanity checking is minimal (if at all).  The configuration of libvirt applies to
 the system as a whole and not per-user.
 
+* `libvirt_users` this is a ***list*** of users that will be added to a
+  "libvirt" group which can use libvirt without providing root password.  In
+  addition to this, these users will have
+  `export LIBVIRT_DEFAULT_URI="qemu:///system"` added to their `.bashrc` which
+  will change their default URI from `qemu:///session`  ***NOTE:*** *this makes
+  sense in my use case, but make sure it does in yours before blindly setting
+  this.
+  [Here is some good reading on the topic.](https://blog.wikichoon.com/2016/01/qemusystem-vs-qemusession.html)
 * `config_for_sat` **DEFAULT = false** libvirt can be configured as a provider
   for a Red Hat Satellite but it requires some specific settings.  Setting
   `config_for_sat` to `yes` will ensure those settings are made. ***NOTE:***
@@ -85,6 +93,8 @@ Playbook with user-specific settings:
 - hosts: servers
   roles:
     - role: libvirtd
+      libvirt_users:
+        - "{{ new_user | default( ansible_user_id ) }}"
       config_for_sat: false
       libvirt_storage:
         replace_default: true
@@ -129,11 +139,13 @@ of crappy, sorry about that.
 * figure out a clean and easy way to test
 * test with different OSes
 * determine if user modification is necessary
-* shift to using [Cockpit](https://cockpit-project.org/guide/latest/feature-virtualmachines) instead of virt-manager
+* shift to using 
+  [Cockpit](https://cockpit-project.org/guide/latest/feature-virtualmachines)
+  instead of virt-manager
 
 ## References
 
-* N/A
+* [qemu:///system vs qemu:///session](https://blog.wikichoon.com/2016/01/qemusystem-vs-qemusession.html)
 
 ## License
 

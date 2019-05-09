@@ -1,18 +1,6 @@
 ---
 # modify some configurations
 
-# - name: config| create the libvirt system group
-#   become: yes
-#   group:
-#     name: libvirt
-#     state: present
-
-# - name: config| add new_user to libvirt group
-#   become: yes
-#   user:
-#     name: "{{ new_user | default( ansible_user_id ) }}"
-#     groups: libvirt
-
 # - include_tasks: config_for_sat.yml
 #   when: config_for_sat
 
@@ -24,3 +12,11 @@
   when: libvirt_network.name is defined and
         libvirt_network.bridge_name is defined and
         libvirt_network.ip_address is defined
+
+- name: config| include config_user tasks
+  include:tasks:
+    file: config_user.yml
+  with_items: "{{ libvirt_users }}"
+  loop_control:
+    loop_var: user
+  when: libvirt_users is defined

@@ -1,0 +1,31 @@
+---
+# apply user configuration so a non-root user can access libvirtd easily
+#  user = new_user
+
+- name: config_user| create the libvirt system group
+  become: yes
+  group:
+    name: libvirt
+    state: present
+
+- name: config_user| add {{ item }} to libvirt group
+  become: true
+  user:
+    name: "{{ user ) }}"
+    groups: libvirt
+
+- name: config_user| remove any existing LIBVIRT_DEFAULT_URI from .bashrc [{{ user }}]
+  become: true
+  become_user: "{{ user }}"
+  lineinfile:
+    path: ~/.bashrc
+    regexp: "LIBVIRT_DEFAULT_URI"
+    state: absent
+
+- name: config_user| add the URI we want back to .bashrc [{{ user }}]
+  become: true
+  become_user: "{{ user }}"
+  lineinfile:
+    path: ~/.bashrc
+    line: 'export LIBVIRT_DEFAULT_URI="qemu:///system"'
+    create: true
