@@ -13,6 +13,7 @@
   user:
     name: "{{ user }}"
     groups: libvirt
+    append: true
 
 - name: config_user| remove any existing LIBVIRT_DEFAULT_URI from .bashrc [{{ user }}]
   become: true
