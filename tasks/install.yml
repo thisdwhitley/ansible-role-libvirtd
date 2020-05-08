@@ -9,7 +9,8 @@
   with_items:
     - libvirt-client
     - libguestfs-tools
-    - virt-manager
+    - cockpit
+    - cockpit-machines
     - virt-install
 
 - name: install| install Python modules
