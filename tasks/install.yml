@@ -18,3 +18,13 @@
   pip:
     name: ['lxml']
     state: present
+
+- name: install| start services
+  become: true
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  with_items:
+    - libvirtd
+    - cockpit.socket
