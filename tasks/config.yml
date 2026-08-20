@@ -1,23 +1,18 @@
 ---
 # modify some configurations
-
 # - include_tasks: config_for_sat.yml
 #   when: config_for_sat
 
-- include_tasks: config_storage.yml
-  when: (libvirt_storage.pool_name is defined or 
-          libvirt_storage.replace_default is true) and
-        libvirt_storage.pool_location is defined
+- ansible.builtin.include_tasks: config_storage.yml
+  when: (libvirt_storage.pool_name is defined or libvirt_storage.replace_default) and libvirt_storage.pool_location is defined
 
-- include_tasks: config_network.yml
-  when: libvirt_network.name is defined and
-        libvirt_network.bridge_name is defined and
-        libvirt_network.ip_address is defined
+- ansible.builtin.include_tasks: config_network.yml
+  when: libvirt_network.name is defined and libvirt_network.bridge_name is defined and libvirt_network.ip_address is defined
 
-- name: config| include config_user tasks
-  include_tasks:
+- name: Config| include config_user tasks
+  ansible.builtin.include_tasks:
     file: config_user.yml
-  with_items: "{{ libvirt_users }}"
+  when: libvirt_users is defined
+  loop: "{{ libvirt_users }}"
   loop_control:
     loop_var: user
-  when: libvirt_users is defined

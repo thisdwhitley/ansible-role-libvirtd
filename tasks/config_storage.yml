@@ -1,89 +1,81 @@
 ---
 # tasks specific to creating a new storage pool and maybe deleting the old
 
-- name: config_storage| ensure new pool directory exists
-  become: yes
-  file:
+- name: Config_storage| ensure new pool directory exists
+  ansible.builtin.file:
     path: "{{ libvirt_storage.pool_location }}"
     state: directory
+    mode: "0644"
+  become: true
 
-- name: config_storage| when the default pool will be replaced
+- name: Config_storage| when the default pool will be replaced
+  when: libvirt_storage.replace_default
   block:
-    - name: config_storage| get ansible_libvirt_pools facts
-      become: yes
+    - name: Config_storage| get ansible_libvirt_pools facts
       virt_pool:
         command: facts
-    
-    - name: config_storage| destroy the default pool
-      become: yes
+      become: true
+
+    - name: Config_storage| destroy the default pool
       virt_pool:
         command: destroy
         name: default
+      when: ansible_libvirt_pools.default is defined and ansible_libvirt_pools.default.state == "active"
       register: destroyed
-      when: ansible_libvirt_pools.default is defined and
-            ansible_libvirt_pools.default.state == "active"
+      become: true
 
-    - name: config_storage| populate ansible_libvirt_pools facts again
-      become: yes
+    - name: Config_storage| populate ansible_libvirt_pools facts again
       virt_pool:
         command: facts
       when: destroyed is successful
+      become: true
 
-    - name: config_storage| delete the default pool so we don't fill up /
-      become: yes
+    - name: Config_storage| delete the default pool so we don't fill up /
       virt_pool:
         command: undefine
         name: default
-      when: ansible_libvirt_pools.default is defined and
-            ansible_libvirt_pools.default.state == "inactive"
+      when: ansible_libvirt_pools.default is defined and ansible_libvirt_pools.default.state == "inactive"
+      # variable precedence requires these shenanigans
+      become: true
 
-    # variable precedence requires these shenanigans
-    - name: config_storage| set default_pool_file
-      set_fact:
+    - name: Config_storage| set default_pool_file
+      ansible.builtin.set_fact:
         default_pool_file: default_pool.xml.j2
         default_name: default
-  when: libvirt_storage.replace_default
 
-- name: config_storage| set storage_pool_file
-  set_fact:
+- name: Config_storage| set storage_pool_file
+  ansible.builtin.set_fact:
     storage_pool_file: "{{ default_pool_file | default('new_pool.xml.j2') }}"
     new_name: "{{ default_name | default(libvirt_storage.pool_name) }}"
-
-- name: config_storage| refresh ansible_libvirt_pools facts
-  become: yes
+- name: Config_storage| refresh ansible_libvirt_pools facts
   virt_pool:
     command: facts
-
-- name: config_storage| define storage pool based on template
-  become: yes
+  become: true
+- name: Config_storage| define storage pool based on template
   virt_pool:
     name: "{{ new_name }}"
     command: define
     xml: "{{ lookup('template', storage_pool_file) }}"
-#   when: ansible_libvirt_pools.new_name is not defined
-
-# - name: config_storage| refresh ansible_libvirt_pools facts again
-#   become: yes
-#   virt_pool:
-#     command: facts
-
-# - name: debugging
-#   debug:
-#     msg: "{{ new_name }} {{ ansible_libvirt_pools.new_name }}"
-
-- name: config_storage| activate {{ new_name }} storage pool
-  become: yes
+  #   when: ansible_libvirt_pools.new_name is not defined
+  # - name: config_storage| refresh ansible_libvirt_pools facts again
+  #   become: yes
+  #   virt_pool:
+  #     command: facts
+  # - name: debugging
+  #   debug:
+  #     msg: "{{ new_name }} {{ ansible_libvirt_pools.new_name }}"
+  become: true
+- name: Config_storage| activate {{ new_name }} storage pool
   virt_pool:
     name: "{{ new_name }}"
     state: active
-    autostart: yes
-
-- name: config_storage| set {{ new_name }} to autostart
-  become: yes
+    autostart: true
+  become: true
+- name: Config_storage| set {{ new_name }} to autostart
   virt_pool:
     name: "{{ new_name }}"
-    autostart: yes
-
-# I'm not sure what will happen if the default pool somehow has something it it
-# NOTE: just starting virt-manager regenerates the default pool...is there
-#       somewhere else to remove it?
+    autostart: true
+  # I'm not sure what will happen if the default pool somehow has something it it
+  # NOTE: just starting virt-manager regenerates the default pool...is there
+  #       somewhere else to remove it?
+  become: true
