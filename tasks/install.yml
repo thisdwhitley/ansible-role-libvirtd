@@ -1,30 +1,30 @@
 ---
 # install some packages and utilities
 
-- name: install| libvirtd tools and utilities
-  become: true
-  package:
+- name: Install| libvirtd tools and utilities
+  ansible.builtin.package:
     name: "{{ item }}"
     state: present
-  with_items:
+  loop:
     - libvirt-client
     - libguestfs-tools
     - cockpit
     - cockpit-machines
     - virt-install
-
-- name: install| install Python modules
   become: true
-  pip:
-    name: ['lxml']
+
+- name: Install| install Python modules
+  ansible.builtin.pip:
+    name: [lxml]
     state: present
-
-- name: install| start services
   become: true
-  service:
+
+- name: Install| start services
+  ansible.builtin.service:
     name: "{{ item }}"
     state: started
     enabled: true
-  with_items:
+  loop:
     - libvirtd
     - cockpit.socket
+  become: true

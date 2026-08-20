@@ -1,37 +1,37 @@
 ---
 # tasks specific to creating a new network and maybe deleting the old
 
-- name: config_network| define network based on template
-  become: yes
+- name: Config_network| define network based on template
   virt_net:
     command: define
     name: "{{ libvirt_network.name }}"
     xml: "{{ lookup('template', 'new_network.xml.j2') }}"
+  become: true
 
-- name: config_network| activate {{ libvirt_network.name }} network
-  become: yes
+- name: Config_network| activate {{ libvirt_network.name }} network
   virt_net:
     name: "{{ libvirt_network.name }}"
     state: active
-    autostart: yes
+    autostart: true
+  become: true
 
-- name: config_network| set {{ libvirt_network.name }} network to autostart
-  become: yes
+- name: Config_network| set {{ libvirt_network.name }} network to autostart
   virt_net:
     name: "{{ libvirt_network.name }}"
-    autostart: yes
+    autostart: true
+  become: true
 
-- name: config_network| remove default network if specified
+- name: Config_network| remove default network if specified
+  when: libvirt_network.remove_default
   block:
-    - name: config_network| stop the default network
-      become: yes
+    - name: Config_network| stop the default network
       virt_net:
         state: inactive
         name: default
+      become: true
 
-    - name: config_network| delete the default network
-      become: yes
+    - name: Config_network| delete the default network
       virt_net:
         command: undefine
         name: default
-  when: libvirt_network.remove_default
+      become: true

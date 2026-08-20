@@ -2,31 +2,33 @@
 # apply user configuration so a non-root user can access libvirtd easily
 #  user = new_user
 
-- name: config_user| create the libvirt system group
-  become: yes
-  group:
+- name: Config_user| create the libvirt system group
+  ansible.builtin.group:
     name: libvirt
     state: present
-
-- name: config_user| add {{ user }} to libvirt group
   become: true
-  user:
+
+- name: Config_user| add {{ user }} to libvirt group
+  ansible.builtin.user:
     name: "{{ user }}"
     groups: libvirt
     append: true
-
-- name: config_user| remove any existing LIBVIRT_DEFAULT_URI from .bashrc [{{ user }}]
   become: true
-  become_user: "{{ user }}"
-  lineinfile:
+
+- name: Config_user| remove any existing LIBVIRT_DEFAULT_URI from .bashrc [{{ user }}]
+  ansible.builtin.lineinfile:
     path: ~/.bashrc
-    regexp: "LIBVIRT_DEFAULT_URI"
+    regexp: LIBVIRT_DEFAULT_URI
     state: absent
-
-- name: config_user| add the URI we want back to .bashrc [{{ user }}]
+    mode: "0644"
   become: true
   become_user: "{{ user }}"
-  lineinfile:
+
+- name: Config_user| add the URI we want back to .bashrc [{{ user }}]
+  ansible.builtin.lineinfile:
     path: ~/.bashrc
-    line: 'export LIBVIRT_DEFAULT_URI="qemu:///system"'
+    line: export LIBVIRT_DEFAULT_URI="qemu:///system"
     create: true
+    mode: "0644"
+  become: true
+  become_user: "{{ user }}"
